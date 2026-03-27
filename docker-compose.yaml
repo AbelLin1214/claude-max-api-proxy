@@ -1,4 +1,6 @@
 services:
+  # ── Single instance (default) ───────────────────────────────────
+  # Usage: docker compose up -d
   claude-proxy:
     build: .
     ports:
@@ -6,15 +8,58 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=3456
-      # Set CLAUDE_BIN if claude is installed at a custom path
-      # - CLAUDE_BIN=/usr/local/bin/claude
-      # Enable debug logging
-      # - DEBUG=1
-      # - DEBUG_SUBPROCESS=1
-    volumes:
-      # Mount Claude CLI config for authentication
-      # Linux:
-      - ${HOME}/.claude:/root/.claude
-      # macOS users: uncomment below instead
-      # - ${HOME}/Library/Application Support/Claude:/root/.claude
+      # Pick ONE authentication method:
+      #
+      # Option A: Console API key (pay-per-use)
+      # - ANTHROPIC_API_KEY=sk-ant-xxx
+      #
+      # Option B: OAuth token from Claude Max/Pro subscription
+      # - CLAUDE_OAUTH_TOKEN=your-access-token-here
+      # - CLAUDE_OAUTH_REFRESH_TOKEN=your-refresh-token-here  # optional
     restart: unless-stopped
+
+  # ── Multi-account examples ──────────────────────────────────────
+  # Uncomment below to run multiple instances with different accounts.
+  # Each instance gets its own port and credentials.
+  #
+  # account-1:
+  #   build: .
+  #   ports:
+  #     - "3456:3456"
+  #   environment:
+  #     - HOST=0.0.0.0
+  #     - PORT=3456
+  #     - ANTHROPIC_API_KEY=sk-ant-account1-xxx
+  #   restart: unless-stopped
+  #
+  # account-2:
+  #   build: .
+  #   ports:
+  #     - "3457:3456"
+  #   environment:
+  #     - HOST=0.0.0.0
+  #     - PORT=3456
+  #     - ANTHROPIC_API_KEY=sk-ant-account2-xxx
+  #   restart: unless-stopped
+  #
+  # account-3:
+  #   build: .
+  #   ports:
+  #     - "3458:3456"
+  #   environment:
+  #     - HOST=0.0.0.0
+  #     - PORT=3456
+  #     - CLAUDE_OAUTH_TOKEN=oauth-token-for-account3
+  #   restart: unless-stopped
+  #
+  # # Or mount pre-extracted credentials files:
+  # account-4:
+  #   build: .
+  #   ports:
+  #     - "3459:3456"
+  #   environment:
+  #     - HOST=0.0.0.0
+  #     - PORT=3456
+  #   volumes:
+  #     - ./credentials/account4.json:/home/claude/.claude/.credentials.json:ro
+  #   restart: unless-stopped
