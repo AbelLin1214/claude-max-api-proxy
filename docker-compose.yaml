@@ -1,0 +1,53 @@
+services:
+  # ── Single instance (default) ───────────────────────────────────
+  # Usage: docker compose up -d
+  claude-proxy:
+    build: .
+    ports:
+      - "${PORT:-3456}:3456"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3456
+      # Pick ONE authentication method:
+      #
+      # Option A — Console API key (pay-per-use):
+      # - ANTHROPIC_API_KEY=sk-ant-xxx
+      #
+      # Option B — Claude Max/Pro OAuth token:
+      # - CLAUDE_CODE_OAUTH_TOKEN=your-oauth-access-token
+      # - CLAUDE_CODE_OAUTH_REFRESH_TOKEN=your-refresh-token  # optional
+    restart: unless-stopped
+
+  # ── Multi-account examples ──────────────────────────────────────
+  # Uncomment below to run N instances with different accounts.
+  # Each instance gets its own port and credentials.
+  #
+  # account-1:
+  #   build: .
+  #   ports:
+  #     - "3456:3456"
+  #   environment:
+  #     - HOST=0.0.0.0
+  #     - PORT=3456
+  #     - CLAUDE_CODE_OAUTH_TOKEN=oauth-token-for-account-1
+  #   restart: unless-stopped
+  #
+  # account-2:
+  #   build: .
+  #   ports:
+  #     - "3457:3456"
+  #   environment:
+  #     - HOST=0.0.0.0
+  #     - PORT=3456
+  #     - CLAUDE_CODE_OAUTH_TOKEN=oauth-token-for-account-2
+  #   restart: unless-stopped
+  #
+  # account-3:
+  #   build: .
+  #   ports:
+  #     - "3458:3456"
+  #   environment:
+  #     - HOST=0.0.0.0
+  #     - PORT=3456
+  #     - ANTHROPIC_API_KEY=sk-ant-api-key-for-account-3
+  #   restart: unless-stopped
