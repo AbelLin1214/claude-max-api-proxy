@@ -1,47 +1,29 @@
 #!/bin/sh
 set -e
 
-CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-/home/claude/.claude}"
-mkdir -p "$CLAUDE_CONFIG_DIR"
-
-# ── Authentication setup ──────────────────────────────────────────
-# Priority:
-#   1. ANTHROPIC_API_KEY        — Console API key (pay-per-use)
-#   2. CLAUDE_OAUTH_TOKEN       — OAuth token from Claude Max/Pro subscription
-#   3. Mounted .credentials.json — Pre-existing credentials file
+# ── Authentication ────────────────────────────────────────────────
+# Claude Code CLI natively reads these env vars (no files needed):
 #
-# For Claude Max subscribers: run `claude auth login` on any machine,
-# then copy ~/.claude/.credentials.json (Linux) and mount it into the
-# container, OR extract the oauth token and pass it as CLAUDE_OAUTH_TOKEN.
+#   ANTHROPIC_API_KEY                — Console API key (pay-per-use)
+#   CLAUDE_CODE_OAUTH_TOKEN          — OAuth access token (Max/Pro subscription)
+#   CLAUDE_CODE_OAUTH_REFRESH_TOKEN  — OAuth refresh token (optional, for auto-renewal)
+#
+# How to get your OAuth token (Max/Pro subscribers):
+#   1. Run `claude auth login` on any machine
+#   2. Run `claude auth status` to confirm login
+#   3. On Linux: token is in ~/.claude/.credentials.json
+#      On macOS: token is in the system Keychain (search "claude" in Keychain Access)
+#   4. Pass the token as CLAUDE_CODE_OAUTH_TOKEN env var
 
 if [ -n "$ANTHROPIC_API_KEY" ]; then
-  echo "[entrypoint] Using ANTHROPIC_API_KEY for authentication"
-
-elif [ -n "$CLAUDE_OAUTH_TOKEN" ]; then
-  echo "[entrypoint] Writing OAuth credentials from CLAUDE_OAUTH_TOKEN"
-  cat > "$CLAUDE_CONFIG_DIR/.credentials.json" <<CRED
-{
-  "claudeAiOauth": {
-    "accessToken": "${CLAUDE_OAUTH_TOKEN}",
-    "expiresAt": "9999-12-31T23:59:59.999Z",
-    "refreshToken": "${CLAUDE_OAUTH_REFRESH_TOKEN:-}",
-    "scopes": "user:inference user:profile"
-  }
-}
-CRED
-  chmod 600 "$CLAUDE_CONFIG_DIR/.credentials.json"
-
-elif [ -f "$CLAUDE_CONFIG_DIR/.credentials.json" ]; then
-  echo "[entrypoint] Using mounted credentials file"
-
+  echo "[entrypoint] Auth: ANTHROPIC_API_KEY (Console API key)"
+elif [ -n "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+  echo "[entrypoint] Auth: CLAUDE_CODE_OAUTH_TOKEN (Max/Pro subscription)"
 else
   echo "[entrypoint] WARNING: No authentication configured."
   echo "  Set one of:"
-  echo "    - ANTHROPIC_API_KEY        (Console API key)"
-  echo "    - CLAUDE_OAUTH_TOKEN       (OAuth access token from Max/Pro subscription)"
-  echo "    - Mount .credentials.json  (volume mount)"
-  echo ""
-  echo "  See README for details on extracting credentials."
+  echo "    ANTHROPIC_API_KEY               — Console API key (pay-per-use)"
+  echo "    CLAUDE_CODE_OAUTH_TOKEN         — OAuth token (Max/Pro subscription)"
 fi
 
 # ── Launch server ─────────────────────────────────────────────────
