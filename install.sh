@@ -86,7 +86,7 @@ else
 fi
 
 if [ -n "$PROXY_KEY" ]; then
-  echo "API_KEY=$PROXY_KEY" >> "$ENV_FILE"
+  echo "PROXY_API_KEY=$PROXY_KEY" >> "$ENV_FILE"
 fi
 
 chmod 600 "$ENV_FILE"
@@ -102,7 +102,7 @@ else
 fi
 
 if [ -n "$PROXY_KEY" ]; then
-  sed -i.bak 's|# - API_KEY=.*|- API_KEY=${API_KEY}|' docker-compose.yaml
+  sed -i.bak 's|# - PROXY_API_KEY=.*|- PROXY_API_KEY=${PROXY_API_KEY}|' docker-compose.yaml
 fi
 
 # Patch port if non-default
@@ -124,7 +124,7 @@ echo "========================================="
 echo ""
 echo "  Auth:      $AUTH_METHOD"
 if [ -n "$PROXY_KEY" ]; then
-echo "  Proxy key: enabled (API_KEY)"
+echo "  Proxy key: enabled (PROXY_API_KEY)"
 fi
 echo "  Endpoint:  http://localhost:${PORT}/v1/chat/completions"
 echo "  Health:    http://localhost:${PORT}/health"

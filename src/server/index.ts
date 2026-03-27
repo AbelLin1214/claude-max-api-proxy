@@ -72,7 +72,7 @@ function createApp(): Express {
 
   // API key authentication middleware
   // Supports both OpenAI (Authorization: Bearer <key>) and Anthropic (x-api-key: <key>) formats
-  const API_KEY = process.env.API_KEY;
+  const API_KEY = process.env.PROXY_API_KEY;
   if (API_KEY) {
     app.use("/v1", (req: Request, res: Response, next: NextFunction) => {
       const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, "");
