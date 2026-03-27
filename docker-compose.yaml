@@ -1,0 +1,20 @@
+services:
+  claude-proxy:
+    build: .
+    ports:
+      - "${PORT:-3456}:3456"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3456
+      # Set CLAUDE_BIN if claude is installed at a custom path
+      # - CLAUDE_BIN=/usr/local/bin/claude
+      # Enable debug logging
+      # - DEBUG=1
+      # - DEBUG_SUBPROCESS=1
+    volumes:
+      # Mount Claude CLI config for authentication
+      # Linux:
+      - ${HOME}/.claude:/root/.claude
+      # macOS users: uncomment below instead
+      # - ${HOME}/Library/Application Support/Claude:/root/.claude
+    restart: unless-stopped

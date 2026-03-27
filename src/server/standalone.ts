@@ -17,8 +17,8 @@ async function main(): Promise<void> {
   console.log("Claude Code CLI Provider - Standalone Server");
   console.log("============================================\n");
 
-  // Parse port from command line
-  const port = parseInt(process.argv[2] || String(DEFAULT_PORT), 10);
+  // Parse port from command line or PORT env var
+  const port = parseInt(process.argv[2] || process.env.PORT || String(DEFAULT_PORT), 10);
   if (isNaN(port) || port < 1 || port > 65535) {
     console.error(`Invalid port: ${process.argv[2]}`);
     process.exit(1);
@@ -44,8 +44,9 @@ async function main(): Promise<void> {
   console.log("  Authentication: OK\n");
 
   // Start server
+  const host = process.env.HOST || "127.0.0.1";
   try {
-    await startServer({ port });
+    await startServer({ port, host });
     console.log("\nServer ready. Test with:");
     console.log(`  curl -X POST http://localhost:${port}/v1/chat/completions \\`);
     console.log(`    -H "Content-Type: application/json" \\`);
