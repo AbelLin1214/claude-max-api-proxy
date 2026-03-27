@@ -51,35 +51,35 @@ const DEFAULT_TIMEOUT = 900000; // 15 minutes
  */
 const OPENCLAW_TOOL_MAPPING_PROMPT = [
   "## Tool Name Mapping",
-  "You are running inside Claude Code CLI, not OpenClaw. The system prompt may reference OpenClaw tool names — map them to your actual tools:",
+  "You are running inside Claude Code CLI, not OpenClaw. The system prompt may reference OpenClaw tool names \u2014 map them to your actual tools:",
   "",
   "### Direct tool replacements",
-  "- `exec` or `process` → use `Bash` (run shell commands)",
-  "- `read` → use `Read` (read file contents)",
-  "- `write` → use `Write` (write files)",
-  "- `edit` → use `Edit` (edit files)",
-  "- `grep` → use `Grep` (search file contents)",
-  "- `find` or `ls` → use `Glob` or `Bash(ls ...)`",
-  "- `web_search` → use `WebSearch`",
-  "- `web_fetch` → use `WebFetch`",
-  "- `image` → use `Read` (Claude Code can read images)",
+  "- `exec` or `process` \u2192 use `Bash` (run shell commands)",
+  "- `read` \u2192 use `Read` (read file contents)",
+  "- `write` \u2192 use `Write` (write files)",
+  "- `edit` \u2192 use `Edit` (edit files)",
+  "- `grep` \u2192 use `Grep` (search file contents)",
+  "- `find` or `ls` \u2192 use `Glob` or `Bash(ls ...)`",
+  "- `web_search` \u2192 use `WebSearch`",
+  "- `web_fetch` \u2192 use `WebFetch`",
+  "- `image` \u2192 use `Read` (Claude Code can read images)",
   "",
   "### OpenClaw CLI tools (use via Bash)",
   "These OpenClaw tools are available through the `openclaw` CLI. Use `Bash` to run them:",
-  '- `memory_search` → `Bash(openclaw memory search "<query>")` — semantic search across memory files',
-  "- `memory_get` → `Read` on the memory file directly, OR `Bash(openclaw memory search \"<query>\")` for discovery",
-  '- `message` → `Bash(openclaw message send --to <target> "<text>")` — send messages to channels (Telegram, Discord, etc.)',
+  '- `memory_search` \u2192 `Bash(openclaw memory search \"<query>\")` \u2014 semantic search across memory files',
+  "- `memory_get` \u2192 `Read` on the memory file directly, OR `Bash(openclaw memory search \\\"<query>\\\")` for discovery",
+  '- `message` \u2192 `Bash(openclaw message send --to <target> \"<text>\")` \u2014 send messages to channels (Telegram, Discord, etc.)',
   "  - Also: `openclaw message read`, `openclaw message broadcast`, `openclaw message react`, `openclaw message poll`",
-  "- `cron` → `Bash(openclaw cron list)`, `Bash(openclaw cron add ...)`, `Bash(openclaw cron status)` — manage scheduled jobs",
+  "- `cron` \u2192 `Bash(openclaw cron list)`, `Bash(openclaw cron add ...)`, `Bash(openclaw cron status)` \u2014 manage scheduled jobs",
   "  - Also: `openclaw cron rm`, `openclaw cron enable`, `openclaw cron disable`, `openclaw cron runs`, `openclaw cron run`, `openclaw cron edit`",
-  '- `sessions_list` → `Bash(openclaw agent --local --message "list sessions")` or check session files directly',
-  '- `sessions_history` → `Bash(openclaw agent --local --message "show history for session <key>")` or check session files',
-  "- `nodes` → `Bash(openclaw nodes status)`, `Bash(openclaw nodes describe <node>)`, `Bash(openclaw nodes invoke --node <id> --command <cmd>)`",
-  '  - Also: `openclaw nodes run --node <id> "<shell command>"` for running commands on paired nodes',
+  '- `sessions_list` \u2192 `Bash(openclaw agent --local --message \"list sessions\")` or check session files directly',
+  '- `sessions_history` \u2192 `Bash(openclaw agent --local --message \"show history for session <key>\")` or check session files',
+  "- `nodes` \u2192 `Bash(openclaw nodes status)`, `Bash(openclaw nodes describe <node>)`, `Bash(openclaw nodes invoke --node <id> --command <cmd>)`",
+  '  - Also: `openclaw nodes run --node <id> \"<shell command>\"` for running commands on paired nodes',
   "",
   "### Not available via CLI",
-  "- `browser` — requires OpenClaw's dedicated browser server (no CLI equivalent)",
-  "- `canvas` — requires paired node with canvas capability; use `openclaw nodes invoke` if a node is available",
+  "- `browser` \u2014 requires OpenClaw's dedicated browser server (no CLI equivalent)",
+  "- `canvas` \u2014 requires paired node with canvas capability; use `openclaw nodes invoke` if a node is available",
   "",
   "### Skills",
   "When a skill says to run a bash/python command, use the `Bash` tool directly.",
@@ -193,6 +193,7 @@ export class ClaudeSubprocess extends EventEmitter {
   private buildArgs(options: SubprocessOptions): string[] {
     const args = [
       "--print", // Non-interactive mode
+      "--bare", // Strip all Claude Code context (no hooks, no CLAUDE.md, no env info)
       "--dangerously-skip-permissions", // Skip permission prompts
       "--output-format",
       "stream-json", // JSON streaming output
@@ -201,6 +202,8 @@ export class ClaudeSubprocess extends EventEmitter {
       "--model",
       options.model, // Model alias (opus/sonnet/haiku)
       "--no-session-persistence", // Don't save sessions
+      "--tools",
+      "", // Disable all built-in tools (Read, Bash, etc.)
       "--append-system-prompt",
       OPENCLAW_TOOL_MAPPING_PROMPT,
       // Prompt is passed via stdin (avoids E2BIG on large inputs)
