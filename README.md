@@ -56,7 +56,7 @@ Your App (OpenClaw, Continue.dev, etc.)
 
 ## Quick Start (Docker)
 
-One command to run — just provide your auth token:
+One command to deploy (pulls docker-compose.yaml and starts via `docker compose`):
 
 ```bash
 # Claude Max/Pro subscribers (OAuth token):
@@ -65,9 +65,11 @@ curl -fsSL https://raw.githubusercontent.com/AbelLin1214/claude-max-api-proxy/ma
 # Or with Anthropic Console API key:
 curl -fsSL https://raw.githubusercontent.com/AbelLin1214/claude-max-api-proxy/main/install.sh | bash -s -- --api-key sk-ant-xxx
 
-# Custom port:
-curl -fsSL https://raw.githubusercontent.com/AbelLin1214/claude-max-api-proxy/main/install.sh | bash -s -- --token YOUR_TOKEN --port 8080
+# Custom port and install directory:
+curl -fsSL https://raw.githubusercontent.com/AbelLin1214/claude-max-api-proxy/main/install.sh | bash -s -- --token YOUR_TOKEN --port 8080 --dir /opt/my-proxy
 ```
+
+Files are installed to `/opt/claude-max-api-proxy` by default. Credentials are stored in `.env`, compose config in `docker-compose.yaml` — edit them to add more accounts or change settings.
 
 ### How to Get Your OAuth Token (Mac)
 
@@ -84,7 +86,7 @@ security find-generic-password -s "claude-code-credentials" -w | python3 -c "imp
 ```yaml
 services:
   account-1:
-    image: abellin1214/claude-max-api-proxy:latest
+    image: qqq47267758/claude-max-api-proxy:latest
     ports: ["3456:3456"]
     environment:
       - HOST=0.0.0.0
@@ -92,7 +94,7 @@ services:
     restart: unless-stopped
 
   account-2:
-    image: abellin1214/claude-max-api-proxy:latest
+    image: qqq47267758/claude-max-api-proxy:latest
     ports: ["3457:3456"]
     environment:
       - HOST=0.0.0.0
