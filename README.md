@@ -54,6 +54,52 @@ Your App (OpenClaw, Continue.dev, etc.)
 - **Tool call types** — Full OpenAI tool call type definitions for streaming and non-streaming
 - **Improved streaming** — Better SSE handling with connection confirmation and client disconnect detection
 
+## Quick Start (Docker)
+
+One command to run — just provide your auth token:
+
+```bash
+# Claude Max/Pro subscribers (OAuth token):
+curl -fsSL https://raw.githubusercontent.com/AbelLin1214/claude-max-api-proxy/main/install.sh | bash -s -- --token YOUR_OAUTH_TOKEN
+
+# Or with Anthropic Console API key:
+curl -fsSL https://raw.githubusercontent.com/AbelLin1214/claude-max-api-proxy/main/install.sh | bash -s -- --api-key sk-ant-xxx
+
+# Custom port:
+curl -fsSL https://raw.githubusercontent.com/AbelLin1214/claude-max-api-proxy/main/install.sh | bash -s -- --token YOUR_TOKEN --port 8080
+```
+
+### How to Get Your OAuth Token (Mac)
+
+```bash
+# Make sure you've logged in first:
+claude auth login
+
+# Extract the token:
+security find-generic-password -s "claude-code-credentials" -w | python3 -c "import sys,json; print(json.load(sys.stdin)['claudeAiOauth']['accessToken'])"
+```
+
+### Docker Compose (Multi-Account)
+
+```yaml
+services:
+  account-1:
+    image: abellin1214/claude-max-api-proxy:latest
+    ports: ["3456:3456"]
+    environment:
+      - HOST=0.0.0.0
+      - CLAUDE_CODE_OAUTH_TOKEN=token-for-account-1
+    restart: unless-stopped
+
+  account-2:
+    image: abellin1214/claude-max-api-proxy:latest
+    ports: ["3457:3456"]
+    environment:
+      - HOST=0.0.0.0
+      - CLAUDE_CODE_OAUTH_TOKEN=token-for-account-2
+    restart: unless-stopped
+```
+
 ## Prerequisites
 
 1. **Claude Max subscription** ($200/month) — [Subscribe here](https://claude.ai)
@@ -63,11 +109,11 @@ Your App (OpenClaw, Continue.dev, etc.)
    claude auth login
    ```
 
-## Installation
+## Installation (from source)
 
 ```bash
 # Clone the repository
-git clone https://github.com/wende/claude-max-api-proxy.git
+git clone https://github.com/AbelLin1214/claude-max-api-proxy.git
 cd claude-max-api-proxy
 
 # Install dependencies
@@ -87,9 +133,11 @@ npm start
 node dist/server/standalone.js
 ```
 
-The server runs at `http://localhost:3456` by default. Pass a custom port as an argument:
+The server runs at `http://localhost:3456` by default. Override via env or argument:
 
 ```bash
+PORT=8080 node dist/server/standalone.js
+# or
 node dist/server/standalone.js 8080
 ```
 
