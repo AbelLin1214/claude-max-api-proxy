@@ -145,16 +145,20 @@ node dist/server/standalone.js 8080
 
 ### Test it
 
+If `API_KEY` is set, add `-H "Authorization: Bearer YOUR_API_KEY"` or `-H "x-api-key: YOUR_API_KEY"` to all `/v1/*` requests.
+
 ```bash
-# Health check
+# Health check (no auth required)
 curl http://localhost:3456/health
 
 # List models
-curl http://localhost:3456/v1/models
+curl http://localhost:3456/v1/models \
+  -H "Authorization: Bearer YOUR_API_KEY"
 
 # Chat completion (non-streaming)
 curl -X POST http://localhost:3456/v1/chat/completions \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
     "model": "claude-sonnet-4",
     "messages": [{"role": "user", "content": "Hello!"}]
@@ -163,6 +167,7 @@ curl -X POST http://localhost:3456/v1/chat/completions \
 # Chat completion (streaming)
 curl -N -X POST http://localhost:3456/v1/chat/completions \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
     "model": "claude-sonnet-4",
     "messages": [{"role": "user", "content": "Hello!"}],
