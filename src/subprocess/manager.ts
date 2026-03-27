@@ -201,8 +201,8 @@ export class ClaudeSubprocess extends EventEmitter {
       "--model",
       options.model, // Model alias (opus/sonnet/haiku)
       "--no-session-persistence", // Don't save sessions
-      "--system-prompt",
-      "You are Claude, a helpful AI assistant. Respond directly to user questions. Do not attempt to read files, run commands, or access the filesystem.",
+      "--append-system-prompt",
+      OPENCLAW_TOOL_MAPPING_PROMPT,
       // Prompt is passed via stdin (avoids E2BIG on large inputs)
     ];
 
