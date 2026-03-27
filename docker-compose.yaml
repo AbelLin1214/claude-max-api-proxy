@@ -14,4 +14,7 @@ services:
       # Option B — Claude Max/Pro OAuth token:
       # - CLAUDE_CODE_OAUTH_TOKEN=your-oauth-access-token
       # - CLAUDE_CODE_OAUTH_REFRESH_TOKEN=your-refresh-token  # optional
+      #
+      # Proxy API key (clients must send this to access the proxy):
+      # - API_KEY=your-secret-proxy-key
     restart: unless-stopped

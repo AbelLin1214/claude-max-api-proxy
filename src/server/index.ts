@@ -61,7 +61,7 @@ function createApp(): Express {
   app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-api-key");
     next();
   });
 
@@ -69,6 +69,30 @@ function createApp(): Express {
   app.options("*", (_req: Request, res: Response) => {
     res.sendStatus(200);
   });
+
+  // API key authentication middleware
+  // Supports both OpenAI (Authorization: Bearer <key>) and Anthropic (x-api-key: <key>) formats
+  const API_KEY = process.env.API_KEY;
+  if (API_KEY) {
+    app.use("/v1", (req: Request, res: Response, next: NextFunction) => {
+      const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, "");
+      const xApiKey = req.headers["x-api-key"] as string | undefined;
+      const key = bearer || xApiKey;
+
+      if (key !== API_KEY) {
+        res.status(401).json({
+          error: {
+            message: "Invalid API key",
+            type: "authentication_error",
+            code: "invalid_api_key",
+          },
+        });
+        return;
+      }
+      next();
+    });
+    console.log("[Server] API key authentication enabled");
+  }
 
   // Routes
   app.get("/health", handleHealth);

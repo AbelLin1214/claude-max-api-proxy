@@ -4,7 +4,7 @@ set -e
 # ── Claude Max API Proxy — Quick Install ──────────────────────────
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/AbelLin1214/claude-max-api-proxy/main/install.sh | bash -s -- --token YOUR_OAUTH_TOKEN
-#   curl -fsSL ... | bash -s -- --api-key sk-ant-xxx
+#   curl -fsSL ... | bash -s -- --api-key sk-ant-xxx --proxy-key my-secret
 #   curl -fsSL ... | bash -s -- --token YOUR_TOKEN --port 8080
 
 COMPOSE_URL="https://raw.githubusercontent.com/AbelLin1214/claude-max-api-proxy/main/docker-compose.yaml"
@@ -13,6 +13,7 @@ PORT=3456
 OAUTH_TOKEN=""
 REFRESH_TOKEN=""
 API_KEY=""
+PROXY_KEY=""
 
 # ── Parse arguments ───────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -21,6 +22,7 @@ while [[ $# -gt 0 ]]; do
     --token)         OAUTH_TOKEN="$2"; shift 2 ;;
     --refresh-token) REFRESH_TOKEN="$2"; shift 2 ;;
     --api-key)       API_KEY="$2"; shift 2 ;;
+    --proxy-key)     PROXY_KEY="$2"; shift 2 ;;
     --dir)           INSTALL_DIR="$2"; shift 2 ;;
     -h|--help)
       echo "Usage: install.sh [OPTIONS]"
@@ -30,6 +32,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --token TOKEN            Claude Max/Pro OAuth token"
       echo "  --refresh-token TOKEN    OAuth refresh token (optional)"
       echo "  --api-key KEY            Anthropic Console API key"
+      echo "  --proxy-key KEY          Proxy API key (clients must provide this to access the proxy)"
       echo "  --dir DIR                Install directory (default: /opt/claude-max-api-proxy)"
       echo "  -h, --help               Show this help"
       exit 0
@@ -82,6 +85,10 @@ else
   AUTH_METHOD="CLAUDE_CODE_OAUTH_TOKEN"
 fi
 
+if [ -n "$PROXY_KEY" ]; then
+  echo "API_KEY=$PROXY_KEY" >> "$ENV_FILE"
+fi
+
 chmod 600 "$ENV_FILE"
 
 # ── Patch docker-compose.yaml with actual auth env vars ───────────
@@ -92,6 +99,10 @@ if [ -n "$API_KEY" ]; then
 else
   sed -i.bak 's|# - CLAUDE_CODE_OAUTH_TOKEN=.*|- CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN}|' docker-compose.yaml
   [ -n "$REFRESH_TOKEN" ] && sed -i.bak 's|# - CLAUDE_CODE_OAUTH_REFRESH_TOKEN=.*|- CLAUDE_CODE_OAUTH_REFRESH_TOKEN=${CLAUDE_CODE_OAUTH_REFRESH_TOKEN}|' docker-compose.yaml
+fi
+
+if [ -n "$PROXY_KEY" ]; then
+  sed -i.bak 's|# - API_KEY=.*|- API_KEY=${API_KEY}|' docker-compose.yaml
 fi
 
 # Patch port if non-default
@@ -112,15 +123,25 @@ echo " Claude Max API Proxy is running!"
 echo "========================================="
 echo ""
 echo "  Auth:      $AUTH_METHOD"
+if [ -n "$PROXY_KEY" ]; then
+echo "  Proxy key: enabled (API_KEY)"
+fi
 echo "  Endpoint:  http://localhost:${PORT}/v1/chat/completions"
 echo "  Health:    http://localhost:${PORT}/health"
 echo "  Models:    http://localhost:${PORT}/v1/models"
 echo "  Directory: $INSTALL_DIR"
 echo ""
 echo "Test:"
+if [ -n "$PROXY_KEY" ]; then
+echo "  curl -X POST http://localhost:${PORT}/v1/chat/completions \\"
+echo "    -H 'Content-Type: application/json' \\"
+echo "    -H 'Authorization: Bearer YOUR_PROXY_KEY' \\"
+echo "    -d '{\"model\": \"claude-sonnet-4\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello!\"}]}'"
+else
 echo "  curl -X POST http://localhost:${PORT}/v1/chat/completions \\"
 echo "    -H 'Content-Type: application/json' \\"
 echo "    -d '{\"model\": \"claude-sonnet-4\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello!\"}]}'"
+fi
 echo ""
 echo "Manage:"
 echo "  cd $INSTALL_DIR"
