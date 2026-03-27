@@ -66,16 +66,16 @@ const OPENCLAW_TOOL_MAPPING_PROMPT = [
   "",
   "### OpenClaw CLI tools (use via Bash)",
   "These OpenClaw tools are available through the `openclaw` CLI. Use `Bash` to run them:",
-  '- `memory_search` \u2192 `Bash(openclaw memory search \"<query>\")` \u2014 semantic search across memory files',
+  '- `memory_search` \u2192 `Bash(openclaw memory search "<query>")` \u2014 semantic search across memory files',
   "- `memory_get` \u2192 `Read` on the memory file directly, OR `Bash(openclaw memory search \\\"<query>\\\")` for discovery",
-  '- `message` \u2192 `Bash(openclaw message send --to <target> \"<text>\")` \u2014 send messages to channels (Telegram, Discord, etc.)',
+  '- `message` \u2192 `Bash(openclaw message send --to <target> "<text>")` \u2014 send messages to channels (Telegram, Discord, etc.)',
   "  - Also: `openclaw message read`, `openclaw message broadcast`, `openclaw message react`, `openclaw message poll`",
   "- `cron` \u2192 `Bash(openclaw cron list)`, `Bash(openclaw cron add ...)`, `Bash(openclaw cron status)` \u2014 manage scheduled jobs",
   "  - Also: `openclaw cron rm`, `openclaw cron enable`, `openclaw cron disable`, `openclaw cron runs`, `openclaw cron run`, `openclaw cron edit`",
-  '- `sessions_list` \u2192 `Bash(openclaw agent --local --message \"list sessions\")` or check session files directly',
-  '- `sessions_history` \u2192 `Bash(openclaw agent --local --message \"show history for session <key>\")` or check session files',
+  '- `sessions_list` \u2192 `Bash(openclaw agent --local --message "list sessions")` or check session files directly',
+  '- `sessions_history` \u2192 `Bash(openclaw agent --local --message "show history for session <key>")` or check session files',
   "- `nodes` \u2192 `Bash(openclaw nodes status)`, `Bash(openclaw nodes describe <node>)`, `Bash(openclaw nodes invoke --node <id> --command <cmd>)`",
-  '  - Also: `openclaw nodes run --node <id> \"<shell command>\"` for running commands on paired nodes',
+  '  - Also: `openclaw nodes run --node <id> "<shell command>"` for running commands on paired nodes',
   "",
   "### Not available via CLI",
   "- `browser` \u2014 requires OpenClaw's dedicated browser server (no CLI equivalent)",
@@ -193,7 +193,6 @@ export class ClaudeSubprocess extends EventEmitter {
   private buildArgs(options: SubprocessOptions): string[] {
     const args = [
       "--print", // Non-interactive mode
-      "--bare", // Strip all Claude Code context (no hooks, no CLAUDE.md, no env info)
       "--dangerously-skip-permissions", // Skip permission prompts
       "--output-format",
       "stream-json", // JSON streaming output
@@ -202,10 +201,8 @@ export class ClaudeSubprocess extends EventEmitter {
       "--model",
       options.model, // Model alias (opus/sonnet/haiku)
       "--no-session-persistence", // Don't save sessions
-      "--tools",
-      "", // Disable all built-in tools (Read, Bash, etc.)
-      "--append-system-prompt",
-      OPENCLAW_TOOL_MAPPING_PROMPT,
+      "--system-prompt",
+      "You are Claude, a helpful AI assistant. Respond directly to user questions. Do not attempt to read files, run commands, or access the filesystem.",
       // Prompt is passed via stdin (avoids E2BIG on large inputs)
     ];
 
